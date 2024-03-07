@@ -23,12 +23,6 @@ BACKUP_MODEL_LINKS = {
     'lid.176.bin':
     'https://dl.fbaipublicfiles.com/fasttext/supervised-models/',
 
-    # tokenizer and language model for English from sentencepiece and KenLM
-    '*.sp.model':
-    'https://huggingface.co/edugp/kenlm/resolve/main/wikipedia/',
-    '*.arpa.bin':
-    'https://huggingface.co/edugp/kenlm/resolve/main/wikipedia/',
-
     # sentence split model from nltk punkt
     'punkt.*.pickle':
     'https://dail-wlcb.oss-cn-wulanchabu.aliyuncs.com/'
@@ -126,26 +120,6 @@ def prepare_sentencepiece_model(lang, name_pattern='{}.sp.model'):
     except:  # noqa: E722
         sentencepiece_model.load(check_model(model_name, force=True))
     return sentencepiece_model
-
-
-def prepare_kenlm_model(lang, name_pattern='{}.arpa.bin'):
-    """
-    Prepare and load a kenlm model.
-
-    :param model_name: input model name in formatting syntax.
-    :param lang: language to render model name
-    :return: model instance.
-    """
-    import kenlm
-
-    model_name = name_pattern.format(lang)
-
-    logger.info('Loading kenlm language model...')
-    try:
-        kenlm_model = kenlm.Model(check_model(model_name))
-    except:  # noqa: E722
-        kenlm_model = kenlm.Model(check_model(model_name, force=True))
-    return kenlm_model
 
 
 def prepare_nltk_model(lang, name_pattern='punkt.{}.pickle'):
@@ -425,59 +399,6 @@ def prepare_spacy_model(lang, name_pattern='{}_core_web_md-3.5.0'):
     return diversity_model
 
 
-def prepare_diffusion_model(pretrained_model_name_or_path,
-                            diffusion_type,
-                            floating_point='fp32'):
-    """
-        Prepare and load an Diffusion model from HuggingFace.
-
-        :param pretrained_model_name_or_path: input Diffusion model name
-            or local path to the model
-        :param diffusion_type: the use of the diffusion model. It can be
-            'image2image', 'text2image', 'inpainting'
-        :param floating_point: the floating point to load the diffusion
-            model. It can be 'fp16', 'fp32'
-        :return: a Diffusion model.
-    """
-    import torch
-    from diffusers import (AutoPipelineForImage2Image,
-                           AutoPipelineForInpainting,
-                           AutoPipelineForText2Image)
-
-    diffusion_type_to_pipeline = {
-        'image2image': AutoPipelineForImage2Image,
-        'text2image': AutoPipelineForText2Image,
-        'inpainting': AutoPipelineForInpainting
-    }
-
-    if diffusion_type not in diffusion_type_to_pipeline.keys():
-        raise ValueError(
-            f'Not support {diffusion_type} diffusion_type for diffusion '
-            'model. Can only be one of '
-            '["image2image", "text2image", "inpainting"].')
-
-    if floating_point not in ['fp32', 'fp16']:
-        raise ValueError(
-            f'Not support {floating_point} floating_point for diffusion '
-            'model. Can only be one of '
-            '["fp32", "fp16"].')
-
-    if not use_cuda() and floating_point == 'fp16':
-        raise ValueError(
-            'In cpu mode, only fp32 floating_point can be used for diffusion'
-            ' model.')
-
-    pipeline = diffusion_type_to_pipeline[diffusion_type]
-    revision = floating_point
-    torch_dtype = torch.float32 if floating_point == 'fp32' else torch.float16
-
-    model = pipeline.from_pretrained(pretrained_model_name_or_path,
-                                     revision=revision,
-                                     torch_dtype=torch_dtype)
-
-    return model
-
-
 def prepare_recognizeAnything_model(
         pretrained_model_name_or_path='ram_plus_swin_large_14m.pth',
         input_size=384):
@@ -505,12 +426,10 @@ def prepare_recognizeAnything_model(
 MODEL_FUNCTION_MAPPING = {
     'fasttext': prepare_fasttext_model,
     'sentencepiece': prepare_sentencepiece_model,
-    'kenlm': prepare_kenlm_model,
     'nltk': prepare_nltk_model,
     'huggingface': prepare_huggingface_model,
     'simple_aesthetics': prepare_simple_aesthetics_model,
     'spacy': prepare_spacy_model,
-    'diffusion': prepare_diffusion_model,
     'video_blip': prepare_video_blip_model,
     'recognizeAnything': prepare_recognizeAnything_model
 }
