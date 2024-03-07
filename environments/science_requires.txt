@@ -4,7 +4,6 @@ nltk
 transformers>=4.37
 tiktoken
 opencc==1.1.6
-imagededup
 torch
 dlib
 spacy-pkuseg==0.0.32
