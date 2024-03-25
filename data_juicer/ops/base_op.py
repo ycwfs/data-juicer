@@ -112,6 +112,9 @@ class Mapper(OP):
     def is_batched_op(self):
         return self._batched_op
 
+    def __call__(self, sample):
+        return self.process(sample)
+
 
 class Filter(OP):
 
@@ -159,6 +162,9 @@ class Filter(OP):
         :return: true for keeping and false for filtering
         """
         raise NotImplementedError
+
+    def __call__(self, sample):
+        return self.compute_stats(sample)
 
 
 class Deduplicator(OP):
