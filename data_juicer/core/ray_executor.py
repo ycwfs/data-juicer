@@ -170,6 +170,8 @@ class RayExecutor:
                 import traceback
                 traceback.print_exc()
                 exit(1)
+        tend = time.time()
+        logger.info(f'All Ops are done in {"%.3f" % (tend - tstart)}(s).')
 
         # 4. data export
         logger.info('Exporting dataset to disk...')
