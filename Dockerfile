@@ -25,4 +25,4 @@ COPY . .
 RUN pip install -v -e .[all]
 
 # install 3rd-party system dependencies
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+RUN apt-get update && apt-get install cmake ffmpeg libsm6 libxext6  -y
