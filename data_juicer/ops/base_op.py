@@ -1,15 +1,27 @@
 import copy
-
+from __future__ import annotations
+from abc import ABC, abstractmethod
 import pandas as pd
 import pyarrow as pa
 
 from data_juicer.utils.mm_utils import size_to_bytes
 from data_juicer.utils.registry import Registry
+from datasets import Dataset
 
 OPERATORS = Registry('Operators')
 
 
-class OP:
+class BaseOP(ABC):
+    """
+    Abstract base class for all operators
+    """
+
+    @abstractmethod
+    def run(self, dataset, **kwargs):
+        pass
+
+class OP(BaseOP):
+    """Origin OP class"""
 
     def __init__(self, *args, **kwargs):
         """
@@ -18,11 +30,11 @@ class OP:
         :param text_key: the key name of field that stores sample texts
             to be processed.
         :param image_key: the key name of field that stores sample image list
-            to be processed
+            to be processed.
         :param audio_key: the key name of field that stores sample audio list
-            to be processed
+            to be processed.
         :param video_key: the key name of field that stores sample video list
-            to be processed
+            to be processed.
         """
         # init data keys
         self.text_key = kwargs.get('text_key', 'text')
@@ -88,7 +100,9 @@ def ray_batch_mapper_wrapper(samples, fn):
 
 
 class Mapper(OP):
-
+    """
+    Abstract base class for existing mapper operators
+    """
     def __init__(self, *args, **kwargs):
         """
         Base class that conducts data editing.
@@ -133,9 +147,14 @@ class Mapper(OP):
         else:
             return self.process(sample)
 
+    def run(self, dataset, **kwargs):
+        return dataset.map(**kwargs)
+
 
 class Filter(OP):
-
+    """
+    Abstract base class for existing filter operators
+    """
     def __init__(self, *args, **kwargs):
         """
         Base class that removes specific info.
