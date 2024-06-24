@@ -1,4 +1,5 @@
 import math
+import os
 import re
 from itertools import chain
 
@@ -7,7 +8,7 @@ from jsonargparse.typing import NonNegativeFloat, NonNegativeInt
 from data_juicer.utils.availability_utils import AvailabilityChecking
 from data_juicer.utils.file_utils import (add_suffix_to_filename,
                                           transfer_filename)
-from data_juicer.utils.mm_utils import SpecialTokens
+from data_juicer.utils.mm_utils import SpecialTokens, load_video
 
 from ..base_op import OPERATORS, Mapper
 
@@ -47,6 +48,7 @@ class VideoSplitBySceneMapper(Mapper):
                  threshold: NonNegativeFloat = 27.0,
                  min_scene_len: NonNegativeInt = 15,
                  show_progress: bool = False,
+                 keep_method: str = 'all',
                  *args,
                  **kwargs):
         """
@@ -57,6 +59,8 @@ class VideoSplitBySceneMapper(Mapper):
         :param threshold: Threshold passed to the detector.
         :param min_scene_len: Minimum length of any scene.
         :param show_progress: Whether to show progress from scenedetect.
+        :param keep_method: Method to keep the sub videos. 'all': keep all sub
+            videos splited by scenes; 'longest': keep the longest sub video.
         :param args: extra args
         :param kwargs: extra args
         """
@@ -68,10 +72,15 @@ class VideoSplitBySceneMapper(Mapper):
                 f'Scene detector {detector} is not supported. '
                 f'Can only be one of {list(self.avaliable_detectors.keys())}')
 
+        if keep_method not in ['all', 'longest']:
+            raise ValueError(f'keep_method [{keep_method}] is not supported. '
+                             f"Can only be one of ['all', 'longest']. ")
+
         self.detector = detector
         self.threshold = threshold
         self.min_scene_len = min_scene_len
         self.show_progress = show_progress
+        self.keep_method = keep_method
 
         # prepare detector args
         avaliable_kwargs = self.avaliable_detectors[self.detector]
@@ -124,6 +133,23 @@ class VideoSplitBySceneMapper(Mapper):
                                    scene_list=scene_list,
                                    output_file_template=output_template,
                                    show_progress=self.show_progress)
+                # only keep the longest video if required
+                if self.keep_method == 'longest':
+                    max_duration = -1
+                    longest_video_key = None
+                    for sub_video_key in output_video_keys[video_key]:
+                        container = load_video(sub_video_key)
+                        stream = container.streams.video[0]
+                        cur_duration = round(stream.duration *
+                                             stream.time_base)
+                        if cur_duration > max_duration:
+                            max_duration = cur_duration
+                            longest_video_key = sub_video_key
+                    for sub_video_key in output_video_keys[video_key]:
+                        if sub_video_key != longest_video_key:
+                            os.remove(sub_video_key)
+                    output_video_keys[video_key] = [longest_video_key]
+
             else:
                 output_video_keys[video_key] = [video_key]
 

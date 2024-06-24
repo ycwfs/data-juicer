@@ -60,6 +60,25 @@ class VideoSplitBySceneMapperTest(DataJuicerTestCaseBase):
                                      min_scene_len=15)
         self._run_helper(op, ds_list, tgt_list)
 
+    def test_KeepMethod(self):
+        ds_list = [
+            {
+                'videos': [self.vid1_path]  # 3 scenes
+            },
+            {
+                'videos': [self.vid2_path]  # 1 scene
+            },
+            {
+                'videos': [self.vid3_path]  # 2 scenes
+            }
+        ]
+        tgt_list = [{'scene_num': 1}, {'scene_num': 1}, {'scene_num': 1}]
+        op = VideoSplitBySceneMapper(detector='ContentDetector',
+                                     threshold=27.0,
+                                     min_scene_len=15,
+                                     keep_method='longest')
+        self._run_helper(op, ds_list, tgt_list)
+
     def test_AdaptiveDetector(self):
         ds_list = [
             {

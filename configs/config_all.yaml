@@ -231,6 +231,7 @@ process:
       threshold: 27.0                                         # threshold passed to the detector
       min_scene_len: 15                                       # minimum length of any scene
       show_progress: false                                    # whether to show progress from scenedetect
+      keep_method: 'all'                                      # Method to keep the sub videos. 'all': keep all sub videos splited by scenes; 'longest': keep the longest sub video.
   - video_tagging_from_audio_mapper:                        # Mapper to generate video tags from audio streams extracted from the video.
       hf_ast: 'MIT/ast-finetuned-audioset-10-10-0.4593'       # Huggingface model name for the audio classification model.
       mem_required: '500MB'                                   # This operation (Op) utilizes deep neural network models that consume a significant amount of memory for computation, hence the system's available memory might constrains the maximum number of processes that can be launched
