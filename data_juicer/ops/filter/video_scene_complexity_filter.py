@@ -64,31 +64,20 @@ class VideoSceneComplexityFilter(Filter):
 
         video_tags = sample[Fields.video_frame_tags][0]
         
-        tag_count = len(video_tags)        
-        sample[Fields.stats][StatsKeys.video_tag_numbers] = tag_count
+        tag_counts = len(video_tags)        
+        sample[Fields.stats][StatsKeys.video_tag_numbers] = tag_counts
 
-        if tag_count <= 1:
-            sample[Fields.stats][StatsKeys.video_tag_categories] = tag_count
+        if tag_counts <= 1:
+            sample[Fields.stats][StatsKeys.video_tag_categories] = tag_counts
             return sample
 
         model = get_model(self.model_key,rank=rank)
 
-        # 编码标签
         embeddings = model.encode(video_tags)
-        
-        # 计算相似度矩阵
         similarities = model.similarity(embeddings, embeddings)
-        
-        # 将相似度转换为距离
         distances = 1 - similarities
-        
-        # 使用层次聚类
         linkage_matrix = linkage(distances, method='complete')
-        
-        # 根据阈值切分聚类
         clusters = fcluster(linkage_matrix, t=1-self.threshold, criterion='distance')
-        
-        # 计算唯一类别的数量
         num_categories = len(np.unique(clusters))
 
         sample[Fields.stats][StatsKeys.video_tag_categories] = num_categories
