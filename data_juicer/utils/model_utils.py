@@ -506,17 +506,44 @@ def prepare_recognizeAnything_model(
     :param input_size: the input size of the model.
     """
     from ram.models import ram_plus
+    from ram.models import tag2text
     logger.info('Loading recognizeAnything model...')
-    try:
-        model = ram_plus(pretrained=check_model(pretrained_model_name_or_path),
-                         image_size=input_size,
-                         vit='swin_l')
-    except:  # noqa: E722
-        model = ram_plus(pretrained=check_model(pretrained_model_name_or_path,
-                                                force=True),
-                         image_size=input_size,
-                         vit='swin_l')
+    if 'ram_plus_swin_large' in pretrained_model_name_or_path:
+        try:
+            model = ram_plus(pretrained=check_model(pretrained_model_name_or_path),
+                            image_size=input_size,
+                            vit='swin_l')
+        except:  # noqa: E722
+            model = ram_plus(pretrained=check_model(pretrained_model_name_or_path,
+                                                    force=True),
+                            image_size=input_size,
+                            vit='swin_l')
+    elif 'tag2text_swin' in pretrained_model_name_or_path:
+            # delete some tags that may disturb captioning
+        # 127: "quarter"; 2961: "back", 3351: "two"; 3265: "three"; 3338: "four"; 3355: "five"; 3359: "one"
+        delete_tag_index = [127,2961, 3351, 3265, 3338, 3355, 3359]
+        try:
+            model = tag2text(pretrained=check_model(pretrained_model_name_or_path),
+                            image_size=input_size,
+                            vit='swin_b',
+                            delete_tag_index=delete_tag_index)
+        except:  # noqa: E722
+            model = tag2text(pretrained=check_model(pretrained_model_name_or_path,
+                                                    force=True),
+                            image_size=input_size,
+                            vit='swin_b',
+                            delete_tag_index=delete_tag_index)
     model.eval()
+    return model
+
+def prepare_textsimilarity_model(
+        pretrained_model_name_or_path = 'sentence-transformers/all-MiniLM-L6-v2'):
+    
+    logger.info('Loading sentence-transformers model...')
+    from sentence_transformers import SentenceTransformer
+
+    model = SentenceTransformer(pretrained_model_name_or_path)
+
     return model
 
 
@@ -530,7 +557,8 @@ MODEL_FUNCTION_MAPPING = {
     'spacy': prepare_spacy_model,
     'diffusion': prepare_diffusion_model,
     'video_blip': prepare_video_blip_model,
-    'recognizeAnything': prepare_recognizeAnything_model
+    'recognizeAnything': prepare_recognizeAnything_model,
+    'SentenceTransformer': prepare_textsimilarity_model
 }
 
 
@@ -554,7 +582,7 @@ def move_to_cuda(model, rank):
 
     for module in model:
         if callable(getattr(module, 'to', None)):
-            logger.debug(
+            logger.info(
                 f'Moving {module.__class__.__name__} to CUDA device {rank}')
             module.to(f'cuda:{rank}')
 

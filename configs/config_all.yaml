@@ -240,6 +240,11 @@ process:
       frame_sampling_method: 'all_keyframes'                  # sampling method of extracting frame images from the videos. Should be one of ["all_keyframes", "uniform"]. The former one extracts all key frames and the latter one extract specified number of frames uniformly from the video. Default: "all_keyframes".
       frame_num: 3                                            # the number of frames to be extracted uniformly from the video. Only works when frame_sampling_method is "uniform". If it's 1, only the middle frame will be extracted. If it's 2, only the first and the last frames will be extracted. If it's larger than 2, in addition to the first and the last frames, other frames will be extracted uniformly within the video duration.
   - whitespace_normalization_mapper:                        # normalize different kinds of whitespaces to English whitespace.
+  - video_caption_from_tag_mapper:                     # generate captions by frame images extracted from video to augment datasets
+      frame_sampling_method: 'all_keyframes'
+      frame_num: 3
+      keep_original_sample: true
+      mem_required: '20GB'                                    # This operation (Op) utilizes deep neural network models that consume a significant amount of memory for computation, hence the system's available memory might constrains the maximum number of processes that can be launched
 
   # Filter ops
   - alphanumeric_filter:                                    # filter text with alphabet/numeric ratio out of specific range.
@@ -458,6 +463,13 @@ process:
       rep_len: 10                                             # repetition length for word-level n-gram
       min_ratio: 0.0                                          # the min ratio of filter range
       max_ratio: 0.5                                          # the max ratio of filter range
+  - video_scene_complexity_filter:                            # Filter videos with insufficient tags to enrich the scene
+      hf_text_similarity_model: 'sentence-transformers/all-MiniLM-L6-v2'  # model to categorize tags
+      frame_sampling_method: 'all_keyframes'                  # method to generate tags, reference to video_tagging_from_frames_mapper
+      frame_num: 3                                            # method to generate tags, reference to video_tagging_from_frames_mapper
+      threshold: 0.1                                          # tag categories param
+      min_tags: 3                                             # filter videos that tags less than min_tags
+      min_tag_categories: 2                                   # filter videos that tags_categories less than min_tags_categories
 
   # Deduplicator ops
   - document_deduplicator:                                  # deduplicate text samples using md5 hashing exact matching method

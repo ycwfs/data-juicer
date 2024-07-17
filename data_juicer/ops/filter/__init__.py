@@ -18,7 +18,7 @@ from . import (alphanumeric_filter, audio_duration_filter,
                video_nsfw_filter, video_ocr_area_ratio_filter,
                video_resolution_filter, video_tagging_from_frames_filter,
                video_watermark_filter, word_repetition_filter,
-               words_num_filter)
+               words_num_filter,video_scene_complexity_filter)
 from .alphanumeric_filter import AlphanumericFilter
 from .audio_duration_filter import AudioDurationFilter
 from .audio_nmf_snr_filter import AudioNMFSNRFilter
@@ -61,6 +61,7 @@ from .video_tagging_from_frames_filter import VideoTaggingFromFramesFilter
 from .video_watermark_filter import VideoWatermarkFilter
 from .word_repetition_filter import WordRepetitionFilter
 from .words_num_filter import WordsNumFilter
+from .video_scene_complexity_filter import VideoSceneComplexityFilter
 
 __all__ = [
     'ImageTextSimilarityFilter',
@@ -104,6 +105,7 @@ __all__ = [
     'FlaggedWordFilter',
     'WordRepetitionFilter',
     'VideoMotionScoreFilter',
+    'VideoSceneComplexityFilter',
 ]
 
 # yapf: enable
