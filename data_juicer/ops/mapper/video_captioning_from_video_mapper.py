@@ -370,5 +370,5 @@ class VideoCaptioningFromVideoMapper(Mapper):
         res_samples = {}
         for key in keys:
             res_samples[key] = [s[key] for s in samples_after_generation]
-
+        print(res_samples)
         return res_samples

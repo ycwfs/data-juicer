@@ -117,9 +117,8 @@ class VideoCaptionFromTagMapper(Mapper):
         
         chosen_index = random.choice(longest_tag_indices)
         longest_tag = [i.strip() for i in tags[chosen_index].split("|")]
-        print(longest_tag)
         corresponding_caption = captions[chosen_index]
-        print(corresponding_caption)
+
 #{'videos': ['/data01/resized/18FTZ.mp4'], 'text': '<__dj__video> <|__dj__eoc|>', '__dj__stats__': {'video_tag_numbers': 77, 'video_tag_categories': 58}, '__dj__video_frame_tags__': [['man', 'shirt', 'doorway', 'room', 'stool', 'carpet', 'floor', 'squat', 'mat', 'cloth', 'paper', 'red', 'stand', 'woman', 'scroll', 'material', 'pen', 'writing', 'home appliance', 'chair', 'person', 'paper towel', 'toilet paper', 'dark', 'boy', 'bend', 'tool', 'wear', 'kitchen', 'book', 'polo shirt', 'bible', 'sit', 'strip', 'black', 'check', 'food', 'read', 'write', 'corridor', 'wash', 'bathroom', 'magnet', 'mark', 'pencil', 'plaid', 'elevator', 'exhaust hood', 'sink', 'stare', 'open', 'job', 'pet', 'pillow', 'remote', 'door', 'hallway', 'bulletin board', 'can', 'pink', 'alley', 'design', 'napkin', 'notebook', 'roll', 'dog', 'floor mat', 'cat', 'girl', 'wall', 'clipboard', 'pillar', 'extinguisher', 'laptop', 'lamp', 'brush', 'mouth']]}
         sample[Fields.video_frame_tags] = longest_tag
         sample[self.text_key] = f"{SpecialTokens.video} {corresponding_caption} {SpecialTokens.eoc}"
